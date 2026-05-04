@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>出海数据合规AI检测器 | 智能合规审查助手</title>
+    <!-- 使用国内 CDN 避免跟踪阻止警告（实际不影响功能） -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: linear-gradient(135deg, #f5f7fc 0%, #eef2f9 100%); color: #1a2634; padding: 2rem 1.5rem; line-height: 1.5; }
+        .container { max-width: 1400px; margin: 0 auto; }
+        .hero { text-align: center; margin-bottom: 2.5rem; }
+        .hero h1 { font-size: 2.2rem; font-weight: 700; background: linear-gradient(120deg, #0b2b5c, #1e4a7a); -webkit-background-clip: text; background-clip: text; color: transparent; margin-bottom: 0.5rem; }
+        .hero .sub { font-size: 1rem; color: #4a5b6e; max-width: 700px; margin: 0 auto; }
+        .badge { display: inline-block; background: #eef2ff; padding: 0.2rem 0.8rem; border-radius: 40px; font-size: 0.75rem; font-weight: 500; color: #1e4a7a; margin-top: 0.75rem; }
+        .dashboard { display: flex; flex-wrap: wrap; gap: 2rem; margin-top: 1.5rem; }
+        .input-panel, .result-panel { background: white; border-radius: 28px; box-shadow: 0 20px 35px -12px rgba(0,0,0,0.08); padding: 1.8rem; }
+        .input-panel { flex: 1.2; min-width: 280px; }
+        .result-panel { flex: 1; min-width: 300px; display: flex; flex-direction: column; }
+        label { font-weight: 600; font-size: 0.85rem; color: #2c3e4e; display: block; margin-bottom: 0.4rem; }
+        textarea { width: 100%; border: 1px solid #dce5ef; border-radius: 20px; padding: 1rem; font-family: monospace; font-size: 0.9rem; resize: vertical; background: #fefefe; }
+        textarea:focus { outline: none; border-color: #2c7da0; box-shadow: 0 0 0 3px rgba(44,125,160,0.1); }
+        .btn-group { display: flex; flex-wrap: wrap; gap: 12px; margin: 1.2rem 0; }
+        button { font-family: 'Inter', sans-serif; font-weight: 600; padding: 0.7rem 1.4rem; border-radius: 40px; cursor: pointer; border: none; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 8px; background: white; border: 1px solid #cbdde9; color: #2c3e4e; transition: 0.2s; }
+        .btn-primary { background: #1f6392; border: none; color: white; box-shadow: 0 4px 8px rgba(31,99,146,0.2); }
+        .btn-primary:hover { background: #0e4a70; transform: translateY(-2px); }
+        .btn-outline:hover { background: #eef3fc; border-color: #1f6392; }
+        .mode-switch { background: #f4f9fe; border-radius: 28px; padding: 0.9rem 1.2rem; margin: 0.8rem 0 1rem 0; }
+        .checkbox-label { display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: 500; }
+        hr { margin: 1rem 0; border: 0; height: 1px; background: #e4edf5; }
+        .result-header { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; margin-bottom: 1rem; border-bottom: 2px solid #e6f0f8; padding-bottom: 0.75rem; }
+        .result-content { flex: 1; overflow-y: auto; max-height: 500px; white-space: pre-wrap; word-break: break-word; line-height: 1.6; font-size: 0.9rem; background: #fefefb; padding: 0.5rem 0.2rem; border-radius: 16px; }
+        .score-chip { background: #eef2ff; padding: 0.2rem 0.9rem; border-radius: 40px; font-size: 0.8rem; font-weight: 600; }
+        .loading { display: flex; justify-content: center; align-items: center; gap: 12px; color: #1f6392; padding: 2rem; }
+        .step-guide { margin-top: 2.5rem; background: #ffffffd9; border-radius: 28px; padding: 1.5rem; border: 1px solid #e2edf7; }
+        .step-guide h3 { font-weight: 600; margin-bottom: 1rem; display: flex; align-items: center; gap: 8px; }
+        .steps { display: flex; flex-wrap: wrap; gap: 1rem; justify-content: space-between; }
+        .step-item { flex: 1; background: #f7faff; padding: 0.8rem; border-radius: 20px; font-size: 0.8rem; }
+        .step-num { font-weight: 800; background: #1f6392; width: 24px; height: 24px; display: inline-block; text-align: center; line-height: 24px; border-radius: 60px; color: white; font-size: 0.75rem; margin-right: 6px; }
+        .footer-note { margin-top: 1rem; font-size: 0.7rem; color: #6c7e92; text-align: center; }
+        i { font-size: 0.95rem; }
+        @media (max-width: 800px) { body { padding: 1rem; } .input-panel, .result-panel { padding: 1.2rem; } }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="hero">
+        <h1><i class="fas fa-globe" style="color:#2c7da0;"></i> 出海数据合规AI检测器</h1>
+        <div class="sub">基于人工智能的跨境数据合规分析助手 • GDPR / CCPA / PIPL 多维审查</div>
+        <div class="badge"><i class="fas fa-robot"></i> AI驱动 · 分步设计 · 实时检测</div>
+    </div>
+
+    <div class="dashboard">
+        <div class="input-panel">
+            <label for="dataInput"><i class="fas fa-database"></i> 📄 待检测出海数据描述</label>
+            <textarea id="dataInput" rows="7" placeholder="描述您的数据处理活动、跨境传输情景、收集的数据类型、用户同意机制、数据存储位置等。例如：&#10;我们计划收集欧盟用户的姓名、Email、IP地址和设备信息，用于个性化广告推送。数据将实时传输到位于美国的总部服务器，未取得用户明确同意，未签署SCCs标准条款，且未提供拒绝选项。"></textarea>
+            
+            <div class="file-upload-area" style="margin: 0.8rem 0;">
+                <label for="fileInput">📂 上传数据文件（支持 .txt / .csv / .json）</label>
+                <input type="file" id="fileInput" accept=".txt,.csv,.json" style="margin-top: 6px;">
+                <button id="readFileBtn" class="btn-outline" style="margin-top: 8px;"><i class="fas fa-upload"></i> 读取并填入</button>
+            </div>
+
+            <div class="btn-group">
+                <button id="analyzeBtn" class="btn-primary"><i class="fas fa-microchip"></i> AI合规检测</button>
+                <button id="exampleBtn" class="btn-outline"><i class="fas fa-file-alt"></i> 加载示例</button>
+                <button id="clearBtn" class="btn-outline"><i class="fas fa-eraser"></i> 清空</button>
+            </div>
+
+            <div class="mode-switch">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="mockToggle" checked> 
+                    <span><i class="fas fa-flask"></i> 演示模拟模式（无需API，内置规则引擎）</span>
+                </label>
+                <div class="footer-note" style="margin-top: 8px;">
+                    <i class="fas fa-info-circle"></i> 真实模式需要运行本地后端（node server.js）并配置 .env 中的 OPENAI_API_KEY。
+                </div>
+            </div>
+        </div>
+
+        <div class="result-panel">
+            <div class="result-header">
+                <span><i class="fas fa-chart-line"></i> <strong>合规分析报告</strong></span>
+                <span class="score-chip" id="complianceBadge">等待检测</span>
+            </div>
+            <div id="resultArea" class="result-content">
+                <div style="color:#8196aa; text-align:center; padding:2rem 0;">
+                    <i class="fas fa-search" style="font-size:2rem; opacity:0.5;"></i><br>
+                    点击「AI合规检测」将分析出海数据合规性
+                </div>
+            </div>
+            <div style="margin-top: 1rem; font-size:0.7rem; color:#5b7a9a; border-top: 1px solid #eaf0f5; padding-top: 0.8rem;">
+                <i class="fas fa-gavel"></i> 参考法规: GDPR第44-49条（跨境传输）、CCPA、中国个人信息保护法第38-43条
+            </div>
+        </div>
+    </div>
+
+    <div class="step-guide">
+        <h3><i class="fas fa-tasks"></i> 分步骤设计方案 | 接入人工智能 + 合规检测工作流</h3>
+        <div class="steps">
+            <div class="step-item"><span class="step-num">1</span> <strong>前端界面构建</strong><br>响应式布局，数据输入面板 + 结果展示区，提供示例/清空等交互。</div>
+            <div class="step-item"><span class="step-num">2</span> <strong>AI服务集成</strong><br>支持两种模式：模拟AI分析(演示) 或 真实OpenAI API调用(需后端代理)。</div>
+            <div class="step-item"><span class="step-num">3</span> <strong>合规Prompt设计</strong><br>定制系统prompt让AI扮演数据合规官，依据GDPR/CCPA/PIPL对数据跨境、同意机制、数据最小化等维度评估。</div>
+            <div class="step-item"><span class="step-num">4</span> <strong>智能分析引擎</strong><br>提取用户输入的关键风险点，生成结构化的风险评级、整改建议与合规分数。</div>
+            <div class="step-item"><span class="step-num">5</span> <strong>结果呈现与迭代</strong><br>展示合规等级、详细风险列表及改进措施，支持多次检测。</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 所有代码等待 DOM 完全加载后执行，避免元素找不到的错误
+    document.addEventListener('DOMContentLoaded', function() {
+        // ---------- DOM 元素绑定 ----------
+        const dataTextarea = document.getElementById('dataInput');
+        const analyzeBtn = document.getElementById('analyzeBtn');
+        const exampleBtn = document.getElementById('exampleBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const resultArea = document.getElementById('resultArea');
+        const complianceBadge = document.getElementById('complianceBadge');
+        const mockToggle = document.getElementById('mockToggle');
+        const fileInput = document.getElementById('fileInput');
+        const readFileBtn = document.getElementById('readFileBtn');
+
+        // ---------- 模拟AI引擎（内置规则）----------
+        function mockAIComplianceAnalysis(userText) {
+            if (!userText || userText.trim().length === 0) {
+                return "⚠️ 未检测到有效数据描述，请填写出海数据处理活动细节。";
+            }
+            const textLower = userText.toLowerCase();
+            let riskItems = [];
+            let score = 75;
+            let suggestions = [];
+            
+            if (textLower.includes('未取得明确同意') || textLower.includes('未经同意') || (textLower.includes('同意') && textLower.includes('没有'))) {
+                riskItems.push("❌ 用户明确同意缺失：违反GDPR第7条及PIPL第14条");
+                score -= 25;
+                suggestions.push("🔧 落实 opt-in 机制，获取用户明示同意并保留记录。");
+            } else if (textLower.includes('同意') && (textLower.includes('勾选') || textLower.includes('授权'))) {
+                riskItems.push("✅ 同意机制存在，需确保记录留存");
+                score += 5;
+            } else {
+                riskItems.push("⚠️ 同意机制不明，建议审查用户协议");
+                score -= 10;
+                suggestions.push("🛡️ 增加单独同意弹窗或跨境数据传输专项同意书。");
+            }
+
+            if (textLower.includes('美国') || textLower.includes('境外') || textLower.includes('传输到') || textLower.includes('服务器位于')) {
+                if (textLower.includes('scc') || textLower.includes('标准合同条款')) {
+                    riskItems.push("⚖️ 提及标准合同条款(SCCs)，需确保落地");
+                    score += 5;
+                } else {
+                    riskItems.push("🌍 高风险跨境传输：未明确合法传输工具");
+                    score -= 20;
+                    suggestions.push("📑 尽快采用欧盟SCCs/中国网信办标准合同，进行DPIA。");
+                }
+            } else {
+                riskItems.push("🌐 未描述跨境细节，建议明确地理位置");
+                score -= 5;
+            }
+
+            if (textLower.includes('生物识别') || textLower.includes('健康') || textLower.includes('基因') || textLower.includes('财务')) {
+                riskItems.push("🔴 包含敏感个人信息，需加强保护");
+                score -= 15;
+                suggestions.push("⚠️ 限制收集范围，实施加密及访问控制，完成DPIA。");
+            }
+            if (textLower.includes('ip地址') || textLower.includes('设备信息') || textLower.includes('cookies')) {
+                riskItems.push("📡 收集在线标识符，需明确告知并设定留存期");
+                score -= 5;
+                suggestions.push("🧹 实施数据最小化与保留期限策略。");
+            }
+            
+            if (!textLower.includes('删除') && !textLower.includes('访问') && !textLower.includes('更正')) {
+                riskItems.push("📖 未提及数据主体权利（访问/删除/更正）");
+                score -= 10;
+                suggestions.push("📋 在隐私政策中增加主体权利响应机制。");
+            } else {
+                score += 3;
+            }
+
+            score = Math.min(100, Math.max(0, score));
+            let riskLevel = score >= 80 ? "🟢 低风险" : (score >= 55 ? "🟡 中风险 (需整改)" : "🔴 高风险 (紧急整改)");
+            
+            const header = `## 📊 出海数据AI合规报告 (模拟智能分析) \n\n**综合评分**: ${score}/100  |  ${riskLevel}\n\n`;
+            const riskList = "### ⚠️ 识别风险项\n" + riskItems.map(r => `• ${r}`).join("\n") + "\n\n";
+            const suggestionBlock = "### ✨ AI改进建议\n" + suggestions.map(s => `• ${s}`).join("\n") + "\n\n";
+            const disclaimer = "> 🤖 本报告基于AI模拟引擎，真实模式可调用OpenAI。";
+            return header + riskList + suggestionBlock + disclaimer;
+        }
+
+        // ---------- 真实 AI 调用（后端代理）----------
+        async function callOpenAICompliance(userText) {
+            const response = await fetch('http://localhost:3000/api/compliance', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text: userText })
+            });
+            if (!response.ok) {
+                const err = await response.json();
+                throw new Error(err.error || `HTTP ${response.status}`);
+            }
+            const data = await response.json();
+            return data.result;
+        }
+
+        // ---------- Markdown 简单转 HTML ----------
+        function formatReportToHtml(text) {
+            if (!text) return "无报告内容";
+            let html = text
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                .replace(/^### (.*?)$/gm, '<h4 style="margin:1rem 0 0.4rem 0;">$1</h4>')
+                .replace(/^## (.*?)$/gm, '<h3 style="margin:0.8rem 0 0.3rem 0;">$1</h3>')
+                .replace(/^# (.*?)$/gm, '<h2 style="margin:1rem 0 0.5rem 0;">$1</h2>')
+                .replace(/\n- (.*?)(\n|$)/g, '<li>• $1</li>')
+                .replace(/\n• (.*?)(\n|$)/g, '<li>• $1</li>')
+                .replace(/\n\d+\. (.*?)(\n|$)/g, '<li>$1</li>')
+                .replace(/\n\n/g, '<br><br>');
+            if (html.includes('<li>')) {
+                html = html.replace(/(<li>.*?<\/li>)/s, '<ul style="margin:0.5rem 0 1rem 1rem;">$1</ul>');
+            }
+            html = html.replace(/\n/g, '<br>');
+            return `<div style="line-height:1.65;">${html}</div>`;
+        }
+
+        // ---------- 主检测流程（防重复运行）----------
+        let isAnalyzing = false;   // 全局标志
+        async function runComplianceCheck() {
+            if (isAnalyzing) return;
+            const userText = dataTextarea.value.trim();
+            if (!userText) {
+                resultArea.innerHTML = `<div style="color:#b33;"><i class="fas fa-exclamation-triangle"></i> 请填写待检测的出海数据描述或数据处理活动。</div>`;
+                complianceBadge.innerText = "无数据";
+                return;
+            }
+            const isMockMode = mockToggle.checked;
+            let finalReport = "";
+            isAnalyzing = true;
+            analyzeBtn.disabled = true;
+            analyzeBtn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> AI分析中...';
+            resultArea.innerHTML = `<div class="loading"><i class="fas fa-cog fa-spin"></i> AI合规引擎启动中，正在审查数据跨境风险...</div>`;
+            complianceBadge.innerText = "分析中...";
+            
+            try {
+                if (isMockMode) {
+                    await new Promise(resolve => setTimeout(resolve, 800));
+                    finalReport = mockAIComplianceAnalysis(userText);
+                    let scoreMatch = finalReport.match(/(\d{1,3})\/100/);
+                    if (scoreMatch) complianceBadge.innerText = `模拟评分 ${scoreMatch[1]}/100`;
+                    else complianceBadge.innerText = "模拟报告就绪";
+                } else {
+                    // 真实模式：请求本地后端
+                    finalReport = await callOpenAICompliance(userText);
+                    let scoreMatch = finalReport.match(/(\d{1,3})\/100/);
+                    if (scoreMatch) complianceBadge.innerText = `评分 ${scoreMatch[1]}/100`;
+                    else complianceBadge.innerText = "AI报告生成";
+                }
+                resultArea.innerHTML = formatReportToHtml(finalReport);
+            } catch (err) {
+                console.error(err);
+                resultArea.innerHTML = `<div style="color:#d9534f; background:#fff2f0; padding:1rem; border-radius:20px;">
+                    <i class="fas fa-circle-exclamation"></i> 检测失败：${err.message}<br>
+                    <small>● 真实模式下请确认后端已启动（node server.js）且 .env 配置正确。</small>
+                </div>`;
+                complianceBadge.innerText = "检测出错";
+            } finally {
+                isAnalyzing = false;
+                analyzeBtn.disabled = false;
+                analyzeBtn.innerHTML = '<i class="fas fa-microchip"></i> AI合规检测';
+            }
+        }
+
+        // ---------- 辅助功能 ----------
+        function loadExample() {
+            dataTextarea.value = `【出海业务场景】我司开发面向欧洲市场的电商APP，收集用户姓名、收货地址、电话号码、支付卡信息(非PCI加密保存)。所有用户数据实时同步到位于新加坡的云服务器，并部分共享给美国第三方营销分析平台。目前隐私政策仅提及“使用cookies”，未单独针对数据传输获取同意，也未签署SCCs标准合同。未设置用户数据删除请求入口。`;
+            complianceBadge.innerText = "等待检测";
+            resultArea.innerHTML = `<div style="color:#8196aa; text-align:center; padding:2rem 0;"><i class="fas fa-chalkboard-user"></i><br>示例已填充，点击AI合规检测按钮启动审查</div>`;
+        }
+        function clearAll() {
+            dataTextarea.value = "";
+            resultArea.innerHTML = `<div style="color:#8196aa; text-align:center; padding:2rem 0;"><i class="fas fa-eraser"></i><br>已清空，请输入新的描述</div>`;
+            complianceBadge.innerText = "等待检测";
+        }
+
+        // 文件读取
+        if (readFileBtn) {
+            readFileBtn.addEventListener('click', () => {
+                const file = fileInput.files[0];
+                if (!file) {
+                    alert('请先选择一个文件');
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    dataTextarea.value = e.target.result;
+                    // 可选：自动触发分析（可取消注释）
+                    // runComplianceCheck();
+                };
+                reader.onerror = function() {
+                    alert('文件读取失败');
+                };
+                reader.readAsText(file, 'UTF-8');
+            });
+        }
+
+        // 绑定按钮事件
+        if (analyzeBtn) analyzeBtn.addEventListener('click', runComplianceCheck);
+        if (exampleBtn) exampleBtn.addEventListener('click', loadExample);
+        if (clearBtn) clearBtn.addEventListener('click', clearAll);
+    });
+</script>
+</body>
+</html>
